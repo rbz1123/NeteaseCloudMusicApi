@@ -2,15 +2,17 @@ FROM node:lts-alpine
 
 RUN apk add --no-cache tini
 
-ENV NODE_ENV production
-USER node
-
 WORKDIR /app
+RUN chown node:node /app
 
 COPY --chown=node:node . ./
 
-RUN npm install --no-audit --no-fund
+ENV NODE_ENV=production
+USER node
+
+RUN npm install --include=dev --no-audit --no-fund \
+    && npm prune --omit=dev --no-audit --no-fund
 
 EXPOSE 3000
 
-CMD [ "/sbin/tini", "--", "node", "app.js" ]
+CMD ["/sbin/tini", "--", "node", "app.js"]
